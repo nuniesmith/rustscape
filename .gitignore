@@ -32,3 +32,5 @@ Thumbs.db
 # Keep these tracked
 !assets/definitions/
 !assets/spawns/
+
+node_modules/
