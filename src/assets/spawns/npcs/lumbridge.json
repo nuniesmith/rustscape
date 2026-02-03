@@ -1,0 +1,67 @@
+[
+  {
+    "npc_id": 3,
+    "position": { "x": 3222, "y": 3218, "z": 0 },
+    "wander_radius": 5
+  },
+  {
+    "npc_id": 1,
+    "position": { "x": 3235, "y": 3205, "z": 0 },
+    "wander_radius": 3
+  },
+  {
+    "npc_id": 2,
+    "position": { "x": 3237, "y": 3210, "z": 0 },
+    "wander_radius": 3
+  },
+  {
+    "npc_id": 7,
+    "position": { "x": 3253, "y": 3255, "z": 0 },
+    "wander_radius": 2
+  },
+  {
+    "npc_id": 7,
+    "position": { "x": 3256, "y": 3256, "z": 0 },
+    "wander_radius": 2
+  },
+  {
+    "npc_id": 7,
+    "position": { "x": 3260, "y": 3255, "z": 0 },
+    "wander_radius": 2
+  },
+  {
+    "npc_id": 10,
+    "position": { "x": 3238, "y": 3295, "z": 0 },
+    "wander_radius": 3
+  },
+  {
+    "npc_id": 10,
+    "position": { "x": 3231, "y": 3295, "z": 0 },
+    "wander_radius": 3
+  },
+  {
+    "npc_id": 10,
+    "position": { "x": 3234, "y": 3298, "z": 0 },
+    "wander_radius": 3
+  },
+  {
+    "npc_id": 198,
+    "position": { "x": 3240, "y": 3245, "z": 0 },
+    "wander_radius": 4
+  },
+  {
+    "npc_id": 198,
+    "position": { "x": 3248, "y": 3241, "z": 0 },
+    "wander_radius": 4
+  },
+  {
+    "npc_id": 3253,
+    "position": { "x": 3220, "y": 3218, "z": 0 },
+    "wander_radius": null
+  },
+  {
+    "npc_id": 3254,
+    "position": { "x": 3224, "y": 3218, "z": 0 },
+    "wander_radius": null
+  }
+]

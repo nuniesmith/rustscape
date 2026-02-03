@@ -1,0 +1,34 @@
+# Build artifacts
+/target/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Runtime data (player saves, etc)
+/data/
+
+# RS cache files (download separately)
+/cache/
+*.dat2
+*.idx*
+
+# Generated assets
+/assets/sprites/
+/assets/maps/collision/
+
+# Client build output is now served by the server, so keep it tracked
+# /client/dist/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Keep these tracked
+!assets/definitions/
+!assets/spawns/

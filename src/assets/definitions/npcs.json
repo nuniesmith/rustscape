@@ -1,0 +1,68 @@
+[
+  {
+    "id": 1,
+    "name": "Man",
+    "combat_level": 2,
+    "examine": "One of the${linebreak}${linebreak}${linebreak} ${linebreak}Misthalanian${linebreak}${linebreak}${linebreak}${linebreak}${linebreak}${linebreak}${linebreak}${linebreak}${linebreak}${linebreak}${linebreak} ${linebreak}${linebreak}${linebreak}${linebreak}${linebreak}${linebreak}${linebreak}${linebreak}${linebreak}${linebreak}${linebreak}folk."
+  },
+  {
+    "id": 2,
+    "name": "Woman",
+    "combat_level": 2,
+    "examine": "A woman."
+  },
+  {
+    "id": 3,
+    "name": "Hans",
+    "combat_level": null,
+    "examine": "Walks around aimlessly."
+  },
+  {
+    "id": 7,
+    "name": "Cow",
+    "combat_level": 2,
+    "examine": "A cow. Mooo!"
+  },
+  {
+    "id": 10,
+    "name": "Chicken",
+    "combat_level": 1,
+    "examine": "Cluck cluck!"
+  },
+  {
+    "id": 81,
+    "name": "Guard",
+    "combat_level": 21,
+    "examine": "He tries to keep the peace."
+  },
+  {
+    "id": 198,
+    "name": "Goblin",
+    "combat_level": 5,
+    "examine": "An ugly green creature."
+  },
+  {
+    "id": 494,
+    "name": "Banker",
+    "combat_level": null,
+    "examine": "They look after your money."
+  },
+  {
+    "id": 519,
+    "name": "Shop keeper",
+    "combat_level": null,
+    "examine": "I wonder what they sell?"
+  },
+  {
+    "id": 3253,
+    "name": "Zezima",
+    "combat_level": 126,
+    "examine": "A legend."
+  },
+  {
+    "id": 3254,
+    "name": "Mod Mark",
+    "combat_level": 126,
+    "examine": "A Jagex moderator."
+  }
+]

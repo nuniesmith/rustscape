@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rustscape Test Client</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #c9a227;
+            margin-bottom: 20px;
+        }
+        .panel {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .panel h2 {
+            color: #c9a227;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        input, button {
+            font-family: inherit;
+            font-size: 14px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+        }
+        input {
+            background: #0f3460;
+            color: #eee;
+            width: 200px;
+            margin-right: 10px;
+        }
+        button {
+            background: #c9a227;
+            color: #1a1a2e;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background: #e0b830; }
+        button:disabled { background: #666; cursor: not-allowed; }
+        #log {
+            background: #0d1b2a;
+            border: 1px solid #0f3460;
+            border-radius: 4px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .log-entry { margin-bottom: 5px; }
+        .log-send { color: #4ade80; }
+        .log-recv { color: #60a5fa; }
+        .log-error { color: #f87171; }
+        .log-info { color: #a78bfa; }
+        .status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status.connected { background: #4ade80; }
+        .status.disconnected { background: #f87171; }
+        .controls { display: flex; gap: 10px; flex-wrap: wrap; }
+        #chatInput { flex: 1; min-width: 200px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Rustscape Test Client</h1>
+        
+        <div class="panel">
+            <h2>Connection</h2>
+            <div class="controls">
+                <span class="status disconnected" id="statusDot"></span>
+                <span id="statusText">Disconnected</span>
+                <input type="text" id="username" placeholder="Username" value="TestPlayer">
+                <button id="connectBtn" onclick="connect()">Connect</button>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>Actions</h2>
+            <div class="controls">
+                <button onclick="requestPlayers()" disabled id="playersBtn">Get Players</button>
+                <button onclick="requestNpcs()" disabled id="npcsBtn">Get NPCs</button>
+                <button onclick="sendPing()" disabled id="pingBtn">Ping</button>
+                <button onclick="moveTo()" disabled id="moveBtn">Move</button>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>Chat</h2>
+            <div class="controls">
+                <input type="text" id="chatInput" placeholder="Type a message..." disabled>
+                <button onclick="sendChat()" disabled id="chatBtn">Send</button>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>Log</h2>
+            <div id="log"></div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let playerId = null;
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function setConnected(connected) {
+            document.getElementById('statusDot').className = `status ${connected ? 'connected' : 'disconnected'}`;
+            document.getElementById('statusText').textContent = connected ? 'Connected' : 'Disconnected';
+            document.getElementById('connectBtn').textContent = connected ? 'Disconnect' : 'Connect';
+            
+            // Enable/disable buttons
+            ['playersBtn', 'npcsBtn', 'pingBtn', 'moveBtn', 'chatBtn'].forEach(id => {
+                document.getElementById(id).disabled = !connected;
+            });
+            document.getElementById('chatInput').disabled = !connected;
+        }
+        
+        function connect() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.close();
+                return;
+            }
+            
+            const username = document.getElementById('username').value || 'TestPlayer';
+            log(`Connecting as ${username}...`, 'info');
+            
+            ws = new WebSocket(`ws://${window.location.host}/ws`);
+            
+            ws.onopen = () => {
+                log('WebSocket connected', 'info');
+                // Send login
+                send({ type: 'Login', username: username, password: 'test' });
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                log(`← ${JSON.stringify(data)}`, 'recv');
+                
+                if (data.type === 'LoginSuccess') {
+                    playerId = data.player_id;
+                    setConnected(true);
+                    log(`Logged in! Player ID: ${playerId}, Position: (${data.position.x}, ${data.position.y})`, 'info');
+                } else if (data.type === 'ChatMessage') {
+                    log(`💬 ${data.username}: ${data.message}`, 'info');
+                }
+            };
+            
+            ws.onclose = () => {
+                log('Disconnected', 'info');
+                setConnected(false);
+                ws = null;
+            };
+            
+            ws.onerror = (error) => {
+                log(`WebSocket error: ${error}`, 'error');
+            };
+        }
+        
+        function send(packet) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const json = JSON.stringify(packet);
+                log(`→ ${json}`, 'send');
+                ws.send(json);
+            }
+        }
+        
+        function requestPlayers() {
+            send({ type: 'RequestPlayers' });
+        }
+        
+        function requestNpcs() {
+            send({ type: 'RequestNpcs' });
+        }
+        
+        function sendPing() {
+            send({ type: 'Ping', timestamp: Date.now() });
+        }
+        
+        function moveTo() {
+            const x = 3222 + Math.floor(Math.random() * 20) - 10;
+            const y = 3218 + Math.floor(Math.random() * 20) - 10;
+            send({ type: 'Move', x: x, y: y });
+        }
+        
+        function sendChat() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (message) {
+                send({ type: 'Chat', message: message });
+                input.value = '';
+            }
+        }
+        
+        // Enter to send chat
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendChat();
+        });
+    </script>
+</body>
+</html>
