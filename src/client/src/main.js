@@ -8,14 +8,14 @@ import {
     CacheReader,
     ArchiveType,
     getArchiveName,
-} from "./cache/CacheReader.js";
+} from "@cache/CacheReader.js";
 import {
     ModelParser,
     PlayerModelIds,
     NpcModelIds,
-} from "./cache/ModelParser.js";
-import { PlayerModel } from "./entities/PlayerModel.js";
-import { NPC } from "./entities/NPC.js";
+} from "@cache/ModelParser.js";
+import { PlayerModel } from "@entities/PlayerModel.js";
+import { NPC } from "@entities/NPC.js";
 
 // Game state
 const gameState = {

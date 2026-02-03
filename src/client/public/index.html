@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Rustscape - 3D Client</title>
+        <link
+            rel="icon"
+            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>"
+        />
+        <link rel="stylesheet" href="/styles/main.css" />
+    </head>
+    <body>
+        <div id="game-container">
+            <!-- Main Canvas Area -->
+            <div id="canvas-area">
+                <canvas id="game-canvas"></canvas>
+
+                <!-- Loading Screen -->
+                <div id="loading-screen">
+                    <div class="loading-logo">🏰 RUSTSCAPE</div>
+                    <div class="loading-bar">
+                        <div
+                            class="loading-progress"
+                            id="loading-progress"
+                        ></div>
+                    </div>
+                    <div class="loading-text" id="loading-text">
+                        Loading game assets...
+                    </div>
+                </div>
+
+                <!-- FPS Counter -->
+                <div id="fps-counter">FPS: 60</div>
+
+                <!-- Minimap -->
+                <div id="minimap-container">
+                    <div id="compass">N</div>
+                    <canvas
+                        id="minimap-canvas"
+                        width="180"
+                        height="180"
+                    ></canvas>
+                </div>
+
+                <!-- XP Orbs -->
+                <div id="xp-orbs">
+                    <div class="xp-orb hp" title="Hitpoints">
+                        <span class="orb-value" id="hp-orb">100</span>
+                    </div>
+                    <div class="xp-orb prayer" title="Prayer">
+                        <span class="orb-value" id="prayer-orb">0</span>
+                    </div>
+                    <div class="xp-orb run" title="Run Energy">
+                        <span class="orb-value" id="run-orb">100</span>
+                    </div>
+                </div>
+
+                <!-- Chat Box -->
+                <div id="chat-box">
+                    <div id="chat-tabs">
+                        <div class="chat-tab active" data-tab="all">All</div>
+                        <div class="chat-tab" data-tab="game">Game</div>
+                        <div class="chat-tab" data-tab="public">Public</div>
+                        <div class="chat-tab" data-tab="private">Private</div>
+                    </div>
+                    <div id="chat-messages"></div>
+                    <div id="chat-input-container">
+                        <input
+                            type="text"
+                            id="chat-input"
+                            placeholder="Type a message..."
+                            autocomplete="off"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div id="sidebar">
+                <!-- Tab Buttons -->
+                <div id="tab-buttons">
+                    <button class="tab-btn" data-tab="combat" title="Combat">
+                        ⚔️
+                    </button>
+                    <button
+                        class="tab-btn active"
+                        data-tab="stats"
+                        title="Stats"
+                    >
+                        📊
+                    </button>
+                    <button class="tab-btn" data-tab="quest" title="Quests">
+                        📜
+                    </button>
+                    <button
+                        class="tab-btn"
+                        data-tab="inventory"
+                        title="Inventory"
+                    >
+                        🎒
+                    </button>
+                    <button
+                        class="tab-btn"
+                        data-tab="equipment"
+                        title="Equipment"
+                    >
+                        👕
+                    </button>
+                    <button class="tab-btn" data-tab="prayer" title="Prayer">
+                        🙏
+                    </button>
+                    <button class="tab-btn" data-tab="spellbook" title="Magic">
+                        ✨
+                    </button>
+                </div>
+
+                <!-- Tab Content -->
+                <div id="tab-content">
+                    <!-- Combat Tab -->
+                    <div class="tab-panel" id="combat-panel">
+                        <div class="panel-title">Combat Options</div>
+                        <div id="combat-content">
+                            <!-- Combat styles will go here -->
+                        </div>
+                    </div>
+
+                    <!-- Stats Tab -->
+                    <div class="tab-panel active" id="stats-panel">
+                        <div class="panel-title">Player Stats</div>
+                        <div id="stats-content">
+                            <div class="stat-item">
+                                <div class="stat-label">Position</div>
+                                <div class="stat-value" id="stat-position">
+                                    0, 0
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Combat Level</div>
+                                <div class="stat-value" id="stat-combat">3</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quest Tab -->
+                    <div class="tab-panel" id="quest-panel">
+                        <div class="panel-title">Quest Journal</div>
+                        <div id="quest-content">
+                            <!-- Quests will go here -->
+                        </div>
+                    </div>
+
+                    <!-- Inventory Tab -->
+                    <div class="tab-panel" id="inventory-panel">
+                        <div class="panel-title">Inventory</div>
+                        <div id="inventory-grid">
+                            <!-- 28 inventory slots -->
+                        </div>
+                    </div>
+
+                    <!-- Equipment Tab -->
+                    <div class="tab-panel" id="equipment-panel">
+                        <div class="panel-title">Equipment</div>
+                        <div id="equipment-container">
+                            <div
+                                class="equipment-slot head"
+                                data-slot="head"
+                                title="Head"
+                            ></div>
+                            <div
+                                class="equipment-slot cape"
+                                data-slot="cape"
+                                title="Cape"
+                            ></div>
+                            <div
+                                class="equipment-slot neck"
+                                data-slot="neck"
+                                title="Neck"
+                            ></div>
+                            <div
+                                class="equipment-slot ammo"
+                                data-slot="ammo"
+                                title="Ammo"
+                            ></div>
+                            <div
+                                class="equipment-slot weapon"
+                                data-slot="weapon"
+                                title="Weapon"
+                            ></div>
+                            <div
+                                class="equipment-slot body"
+                                data-slot="body"
+                                title="Body"
+                            ></div>
+                            <div
+                                class="equipment-slot shield"
+                                data-slot="shield"
+                                title="Shield"
+                            ></div>
+                            <div
+                                class="equipment-slot legs"
+                                data-slot="legs"
+                                title="Legs"
+                            ></div>
+                            <div
+                                class="equipment-slot gloves"
+                                data-slot="gloves"
+                                title="Gloves"
+                            ></div>
+                            <div
+                                class="equipment-slot boots"
+                                data-slot="boots"
+                                title="Boots"
+                            ></div>
+                        </div>
+                    </div>
+
+                    <!-- Prayer Tab -->
+                    <div class="tab-panel" id="prayer-panel">
+                        <div class="panel-title">Prayer</div>
+                        <div id="prayer-content">
+                            <!-- Prayers will go here -->
+                        </div>
+                    </div>
+
+                    <!-- Spellbook Tab -->
+                    <div class="tab-panel" id="spellbook-panel">
+                        <div class="panel-title">Spellbook</div>
+                        <div id="spellbook-content">
+                            <!-- Spells will go here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Load Three.js and game modules -->
+        <script type="module" src="/src/main.js"></script>
+    </body>
+</html>
