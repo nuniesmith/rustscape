@@ -1,0 +1,146 @@
+{
+  "id": 14,
+  "username": "TestPlayer",
+  "position": {
+    "x": 3222,
+    "y": 3218,
+    "z": 0
+  },
+  "skills": {
+    "attack": {
+      "level": 1,
+      "xp": 0
+    },
+    "defence": {
+      "level": 1,
+      "xp": 0
+    },
+    "strength": {
+      "level": 1,
+      "xp": 0
+    },
+    "hitpoints": {
+      "level": 10,
+      "xp": 1154
+    },
+    "ranged": {
+      "level": 1,
+      "xp": 0
+    },
+    "prayer": {
+      "level": 1,
+      "xp": 0
+    },
+    "magic": {
+      "level": 1,
+      "xp": 0
+    },
+    "cooking": {
+      "level": 1,
+      "xp": 0
+    },
+    "woodcutting": {
+      "level": 1,
+      "xp": 0
+    },
+    "fletching": {
+      "level": 1,
+      "xp": 0
+    },
+    "fishing": {
+      "level": 1,
+      "xp": 0
+    },
+    "firemaking": {
+      "level": 1,
+      "xp": 0
+    },
+    "crafting": {
+      "level": 1,
+      "xp": 0
+    },
+    "smithing": {
+      "level": 1,
+      "xp": 0
+    },
+    "mining": {
+      "level": 1,
+      "xp": 0
+    },
+    "herblore": {
+      "level": 1,
+      "xp": 0
+    },
+    "agility": {
+      "level": 1,
+      "xp": 0
+    },
+    "thieving": {
+      "level": 1,
+      "xp": 0
+    },
+    "slayer": {
+      "level": 1,
+      "xp": 0
+    },
+    "farming": {
+      "level": 1,
+      "xp": 0
+    },
+    "runecrafting": {
+      "level": 1,
+      "xp": 0
+    },
+    "hunter": {
+      "level": 1,
+      "xp": 0
+    },
+    "construction": {
+      "level": 1,
+      "xp": 0
+    }
+  },
+  "inventory": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "equipment": {
+    "head": null,
+    "cape": null,
+    "amulet": null,
+    "weapon": null,
+    "body": null,
+    "shield": null,
+    "legs": null,
+    "gloves": null,
+    "boots": null,
+    "ring": null,
+    "ammo": null
+  }
+}

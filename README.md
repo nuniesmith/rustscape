@@ -1,6 +1,69 @@
 # 🦀 Rustscape
 
-A simplified RuneScape-inspired MMORPG server written in Rust with WebSocket support for browser-based clients.
+A browser-based RuneScape clone with Rust backend and Three.js 3D client.
+
+**Current Status:** Phase 3 - Enhanced Rendering (50% Complete)  
+**Quick Start:** See [docs/START_HERE.md](docs/START_HERE.md)
+
+---
+
+## 📚 Documentation Hub
+
+### 🚀 Start Here
+- **[docs/START_HERE.md](docs/START_HERE.md)** - Main navigation hub
+- **[README_PHASE3.md](README_PHASE3.md)** - Executive summary (read first!)
+- **[NEXT_STEPS.md](NEXT_STEPS.md)** - What to do right now
+- **[PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)** - Complete project status
+
+### 🔬 Research & Learning
+- **[RESEARCH_GUIDE.md](RESEARCH_GUIDE.md)** - What to study next (20 hours)
+- **[PHASE3_STATUS.md](PHASE3_STATUS.md)** - Testing guide & checklist
+
+### 🏗️ Technical Documentation
+- **[docs/PHASE3_ARCHITECTURE.md](docs/PHASE3_ARCHITECTURE.md)** - System architecture
+- **[docs/PHASE3_IN_PROGRESS.md](docs/PHASE3_IN_PROGRESS.md)** - Progress log
+- **[docs/PHASE1_COMPLETE.md](docs/PHASE1_COMPLETE.md)** - Server foundation
+- **[docs/PHASE2_COMPLETE.md](docs/PHASE2_COMPLETE.md)** - Cache integration
+
+---
+
+## ⚡ Quick Start
+
+### Test the 3D Client
+```bash
+cd client
+npm install
+npm run dev
+# Open http://localhost:3000/3d/
+```
+
+**Expected:** Player + 4 NPCs, equipment appears after 2 seconds, 60 FPS
+
+### Run the Server
+```bash
+cargo run
+# Open http://localhost:8080
+```
+
+---
+
+## 🎯 Current Progress
+
+- **Phase 1** (Server Foundation): ✅ 100% Complete
+- **Phase 2** (Cache Integration): ✅ 100% Complete
+- **Phase 3** (Enhanced Rendering): 🚧 50% Complete
+  - ✅ PlayerModel class (428 lines)
+  - ✅ NPC class with AI (461 lines)
+  - ✅ Equipment system (11 slots)
+  - ✅ Test NPCs spawning
+  - ⏳ Real cache models (next priority)
+  - ⏳ Skeletal animations
+  - ⏳ Click-to-walk
+  - ⏳ Terrain loading
+
+**Total:** ~5,300 lines of code, 35% project complete
+
+---
 
 ## Features
 
@@ -15,39 +78,58 @@ A simplified RuneScape-inspired MMORPG server written in Rust with WebSocket sup
 - **NPC Dialogue**: Interactive dialogue with branching options
 - **Examine System**: Examine items and NPCs for descriptions
 
-## Quick Start
+## What We're Building
 
-```bash
-# 1. Run the server from project root
-cargo run
+A **browser-based RuneScape clone** featuring:
+- ✅ Rust backend server
+- ✅ Three.js 3D rendering
+- ✅ Authentic RuneScape Build 560 cache data
+- ✅ Multiplayer via WebSockets
+- ⏳ Full OSRS-style gameplay
 
-# 2. Open browser to http://localhost:8080
-```
+**Unique:** No downloads required, runs entirely in browser with authentic assets!
 
-That's it! No complex setup required.
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 rustscape/
-├── Cargo.toml                # Rust project configuration
-├── src/
-│   ├── main.rs              # Entry point, HTTP + WebSocket server
-│   ├── game/mod.rs          # Game state, tick loop, data types
-│   ├── net/mod.rs           # WebSocket handling, packets
-│   └── world/mod.rs         # Regions, collision, visibility
-├── assets/
-│   ├── definitions/         # Game data (git tracked)
-│   │   ├── items.json
-│   │   └── npcs.json
-│   ├── dialogue/            # NPC dialogue trees
-│   │   └── npcs/
-│   └── spawns/              # NPC/object spawn locations
-│       └── npcs/
-│           └── lumbridge.json
+├── README_PHASE3.md         # Executive summary (read first!)
+├── NEXT_STEPS.md            # Action plan for next 1-2 weeks
+├── PROJECT_OVERVIEW.md      # Complete project status
+├── RESEARCH_GUIDE.md        # What to study next
+├── PHASE3_STATUS.md         # Testing guide
+│
+├── docs/
+│   ├── START_HERE.md        # Main navigation hub
+│   ├── PHASE3_ARCHITECTURE.md
+│   ├── PHASE3_IN_PROGRESS.md
+│   ├── PHASE1_COMPLETE.md
+│   └── PHASE2_COMPLETE.md
+│
 ├── client/
-│   ├── dist/                # Static web files served by server
-│   │   ├── index.html       # Landing page (auto-redirects)
+│   ├── dist/3d/
+│   │   ├── index.html       # Classic RuneScape UI
+│   │   └── js/
+│   │       ├── main.js      # Core 3D engine
+│   │       ├── cache/       # Cache reading system
+│   │       │   ├── CacheReader.js (402 lines)
+│   │       │   └── ModelParser.js (437 lines)
+│   │       └── entities/    # NEW in Phase 3!
+│   │           ├── PlayerModel.js (428 lines)
+│   │           └── NPC.js (461 lines)
+│   └── README_3D.md
+│
+├── src/                     # Rust server
+│   ├── main.rs              # Entry point
+│   ├── game/mod.rs          # Game state
+│   ├── net/mod.rs           # WebSocket handling
+│   └── world/mod.rs         # Collision, regions
+│
+└── assets/
+    ├── definitions/         # Game data (JSON)
+    │   ├── items.json
+    │   └── npcs.json
+    └── data_caches/560/     # RuneScape Build 560 cache
 │   │   ├── game.html        # Modern game client
 │   │   └── test-client.html # Debug/test client
 │   └── README.md            # Client documentation

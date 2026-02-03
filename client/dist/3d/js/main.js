@@ -14,6 +14,8 @@ import {
     PlayerModelIds,
     NpcModelIds,
 } from "./cache/ModelParser.js";
+import { PlayerModel } from "./entities/PlayerModel.js";
+import { NPC } from "./entities/NPC.js";
 
 // Game state
 const gameState = {
@@ -115,6 +117,11 @@ async function init() {
 
     // Create player
     await createPlayer(scene);
+
+    updateLoadingProgress(75, "Spawning NPCs...");
+
+    // Spawn test NPCs
+    spawnTestNPCs(scene);
 
     updateLoadingProgress(80, "Connecting to server...");
 
@@ -255,125 +262,88 @@ function createTestTerrain(scene) {
 }
 
 /**
- * Create player (using cache models or fallback)
+ * Create player using PlayerModel class
  */
 async function createPlayer(scene) {
     try {
-        // Try to load from cache
-        console.log("👤 Loading player model from cache...");
+        console.log("👤 Creating player model...");
 
-        const playerMesh = await loadPlayerModel();
-
-        if (playerMesh) {
-            const group = new THREE.Group();
-            group.add(playerMesh);
-
-            // Add name label
-            addNameLabel(group, "Player1");
-
-            group.position.set(
-                gameState.playerPosition.x / 10,
-                0,
-                gameState.playerPosition.y / 10,
-            );
-
-            scene.add(group);
-            gameState.player = group;
-
-            addChatMessage(
-                "✅ Loaded RuneScape player model from cache!",
-                "server",
-            );
-            return;
-        }
-    } catch (error) {
-        console.warn("⚠️ Failed to load player from cache:", error);
-    }
-
-    // Fallback to test player
-    console.log("Using fallback player model");
-    createTestPlayer(scene);
-    addChatMessage("Using fallback player model", "server");
-}
-
-/**
- * Load player model from cache
- */
-async function loadPlayerModel() {
-    try {
-        // Load male body model
-        const modelData = await gameState.cacheReader.getModel(
-            PlayerModelIds.MALE_BODY,
-        );
-
-        if (!modelData) {
-            console.error("Failed to get model data");
-            return null;
-        }
-
-        // Parse and create mesh
-        const mesh = gameState.modelParser.parseAndCreate(
-            modelData,
-            PlayerModelIds.MALE_BODY,
+        // Create player model instance
+        const playerModel = new PlayerModel(
+            gameState.playerUsername || "Player1",
             {
-                flatShading: true,
-                castShadow: true,
-                receiveShadow: false,
+                x: gameState.playerPosition.x / 10,
+                y: 0,
+                z: gameState.playerPosition.y / 10,
             },
         );
 
-        if (mesh) {
-            // Scale to appropriate size
-            mesh.scale.set(0.01, 0.01, 0.01);
-            mesh.position.y = 0;
-        }
+        // Set cache readers
+        playerModel.setCache(gameState.cacheReader, gameState.modelParser);
 
-        return mesh;
+        // Load the model
+        const playerGroup = await playerModel.load();
+
+        // Add to scene
+        scene.add(playerGroup);
+        gameState.player = playerModel;
+
+        addChatMessage("✅ Player model loaded!", "server");
+
+        // Test equipment (optional)
+        testEquipment(playerModel);
+
+        return playerModel;
     } catch (error) {
-        console.error("Error loading player model:", error);
+        console.error("⚠️ Failed to create player:", error);
+        addChatMessage("Failed to create player model", "server");
         return null;
     }
 }
 
 /**
- * Create test player (fallback)
+ * Test equipment system (demo)
  */
-function createTestPlayer(scene) {
-    const group = new THREE.Group();
+function testEquipment(playerModel) {
+    // Equip test items after a delay to show the system working
+    setTimeout(() => {
+        console.log("🗡️ Equipping test items...");
+        playerModel.setEquipment("helmet", 1);
+        playerModel.setEquipment("weapon", 2);
+        playerModel.setEquipment("shield", 3);
+        addChatMessage("Equipped test gear!", "system");
+    }, 2000);
+}
 
-    // Simple player representation
-    const bodyGeometry = new THREE.BoxGeometry(1, 2, 0.5);
-    const bodyMaterial = new THREE.MeshLambertMaterial({
-        color: 0xcc9900, // Gold color
-        flatShading: true,
+/**
+ * Spawn test NPCs around the player
+ */
+function spawnTestNPCs(scene) {
+    console.log("🧙 Spawning test NPCs...");
+
+    const npcData = [
+        { id: 1, name: "Shopkeeper", x: 5, z: 5, behavior: "idle" },
+        { id: 2, name: "Guard", x: -5, z: 5, behavior: "wander" },
+        { id: 3, name: "Goblin", x: 0, z: 10, behavior: "wander" },
+        { id: 4, name: "Chicken", x: 8, z: -3, behavior: "wander" },
+    ];
+
+    npcData.forEach(async (data) => {
+        const npc = new NPC(data.id, data.id, data.name, {
+            x: data.x,
+            y: 0,
+            z: data.z,
+        });
+
+        npc.setCache(gameState.cacheReader, gameState.modelParser);
+        npc.setBehavior(data.behavior);
+
+        const npcGroup = await npc.load();
+        scene.add(npcGroup);
+        gameState.npcs.set(data.id, npc);
     });
-    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-    body.position.y = 1;
-    body.castShadow = true;
-    group.add(body);
 
-    // Head
-    const headGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
-    const headMaterial = new THREE.MeshLambertMaterial({
-        color: 0xffcc88, // Skin color
-        flatShading: true,
-    });
-    const head = new THREE.Mesh(headGeometry, headMaterial);
-    head.position.y = 2.4;
-    head.castShadow = true;
-    group.add(head);
-
-    // Add name label
-    addNameLabel(group, "Player1");
-
-    group.position.set(
-        gameState.playerPosition.x / 10,
-        0,
-        gameState.playerPosition.y / 10,
-    );
-
-    scene.add(group);
-    gameState.player = group;
+    addChatMessage(`Spawned ${npcData.length} NPCs`, "system");
 }
 
 /**
@@ -408,7 +378,9 @@ function updateCamera() {
     const angleRad = (gameState.cameraRotation * Math.PI) / 180;
     const pitchRad = (26.565 * Math.PI) / 180; // Isometric angle
 
-    const targetPos = gameState.player.position;
+    // Get player position (works with both PlayerModel and old player objects)
+    const targetPos =
+        gameState.player.position || gameState.player.getGroup().position;
 
     gameState.camera.position.x =
         targetPos.x + distance * Math.cos(angleRad) * Math.cos(pitchRad);
@@ -416,7 +388,7 @@ function updateCamera() {
     gameState.camera.position.z =
         targetPos.z + distance * Math.sin(angleRad) * Math.cos(pitchRad);
 
-    gameState.camera.lookAt(targetPos);
+    gameState.camera.lookAt(targetPos.x, targetPos.y, targetPos.z);
 }
 
 // Set up networking
@@ -665,6 +637,16 @@ function animate() {
     if (!gameState.loaded) return;
 
     const delta = gameState.clock.getDelta();
+
+    // Update player
+    if (gameState.player && gameState.player.update) {
+        gameState.player.update(delta);
+    }
+
+    // Update all NPCs
+    gameState.npcs.forEach((npc) => {
+        npc.update(delta);
+    });
 
     // Update camera position
     updateCamera();
