@@ -9,17 +9,19 @@ A simplified RuneScape-inspired MMORPG server written in Rust with WebSocket sup
 - **File-Based Storage**: Players saved as JSON files
 - **Hot-Reloadable Data**: Game definitions loaded from JSON files
 - **Async Rust**: Built with Tokio and Axum for high performance
+- **Combat System**: PvP and PvE combat with hit/miss calculation and damage
+- **XP & Leveling**: OSRS-accurate XP formula with 23 skills (levels 1-99)
+- **Ground Items**: Drop, pickup, and visibility system
+- **NPC Dialogue**: Interactive dialogue with branching options
+- **Examine System**: Examine items and NPCs for descriptions
 
 ## Quick Start
 
 ```bash
-# 1. Navigate to the source directory
-cd src
-
-# 2. Run the server
+# 1. Run the server from project root
 cargo run
 
-# 3. Open browser to http://localhost:8080
+# 2. Open browser to http://localhost:8080
 ```
 
 That's it! No complex setup required.
@@ -28,29 +30,34 @@ That's it! No complex setup required.
 
 ```
 rustscape/
+├── Cargo.toml                # Rust project configuration
 ├── src/
-│   ├── src/
-│   │   ├── main.rs           # Entry point, HTTP + WebSocket server
-│   │   ├── game/mod.rs       # Game state, tick loop, data types
-│   │   ├── net/mod.rs        # WebSocket handling, packets
-│   │   └── world/mod.rs      # Regions, collision (placeholder)
-│   ├── assets/
-│   │   ├── definitions/      # Game data (git tracked)
-│   │   │   ├── items.json
-│   │   │   └── npcs.json
-│   │   └── spawns/           # NPC/object spawn locations
-│   │       └── npcs/
-│   │           └── lumbridge.json
-│   ├── data/                 # Runtime data (.gitignored)
-│   │   └── players/          # Player save files (JSON)
-│   ├── client/
-│   │   └── dist/             # Static files served to browser
-│   │       └── index.html    # Test client
-│   ├── Cargo.toml
-│   ├── run.sh
-│   └── README.md
+│   ├── main.rs              # Entry point, HTTP + WebSocket server
+│   ├── game/mod.rs          # Game state, tick loop, data types
+│   ├── net/mod.rs           # WebSocket handling, packets
+│   └── world/mod.rs         # Regions, collision, visibility
+├── assets/
+│   ├── definitions/         # Game data (git tracked)
+│   │   ├── items.json
+│   │   └── npcs.json
+│   ├── dialogue/            # NPC dialogue trees
+│   │   └── npcs/
+│   └── spawns/              # NPC/object spawn locations
+│       └── npcs/
+│           └── lumbridge.json
+├── client/
+│   ├── dist/                # Static web files served by server
+│   │   ├── index.html       # Landing page (auto-redirects)
+│   │   ├── game.html        # Modern game client
+│   │   └── test-client.html # Debug/test client
+│   └── README.md            # Client documentation
+├── data/                    # Runtime data (.gitignored)
+│   └── players/             # Player save files (JSON)
+├── docs/                    # Documentation
+├── scripts/                 # Utility scripts
 ├── LICENSE
-└── README.md                 # This file
+├── run.sh                   # Quick run script
+└── README.md                # This file
 ```
 
 ## How It Works
@@ -157,6 +164,14 @@ Players are saved as JSON in `src/data/players/`:
 | `Chat` | `message` | Send chat |
 | `RequestPlayers` | - | Get nearby players |
 | `RequestNpcs` | - | Get nearby NPCs |
+| `RequestGroundItems` | - | Get ground items |
+| `DropItem` | `slot` | Drop inventory item |
+| `PickupItem` | `ground_item_id` | Pickup ground item |
+| `TalkToNpc` | `npc_id` | Start NPC dialogue |
+| `SelectDialogueOption` | `npc_id`, `dialogue_id`, `option_index` | Choose dialogue option |
+| `ExamineItem` | `item_id` | Examine item definition |
+| `ExamineNpc` | `npc_id` | Examine NPC |
+| `Attack` | `target_type`, `target_id` | Attack player/NPC |
 | `Ping` | `timestamp` | Measure latency |
 
 ### Server → Client
@@ -165,10 +180,22 @@ Players are saved as JSON in `src/data/players/`:
 |------|--------|-------------|
 | `Welcome` | `message`, `tick` | Connection established |
 | `LoginSuccess` | `player_id`, `position`, `skills` | Logged in |
+| `PlayerEnter` | `id`, `username`, `position` | Player entered view |
+| `PlayerLeft` | `id` | Player left view |
 | `PlayerMoved` | `id`, `position` | Player moved (broadcast) |
 | `PlayerList` | `players[]` | Nearby players |
 | `NpcList` | `npcs[]` | Nearby NPCs |
 | `ChatMessage` | `username`, `message` | Chat (broadcast) |
+| `GroundItemSpawned` | `item` | Ground item appeared |
+| `GroundItemRemoved` | `ground_item_id` | Ground item removed |
+| `GroundItemList` | `items[]` | All ground items |
+| `NpcDialogue` | `npc_id`, `npc_name`, `dialogue_id`, `text`, `options[]` | NPC dialogue |
+| `ExamineText` | `text` | Examine description |
+| `CombatHit` | `attacker_id`, `target_id`, `damage`, `target_hp`, `target_max_hp` | Combat hit |
+| `Death` | `entity_id`, `killer_id` | Entity died |
+| `HealthUpdate` | `entity_id`, `current_hp`, `max_hp` | HP changed |
+| `XpGain` | `skill_name`, `xp_gained`, `total_xp` | XP gained |
+| `LevelUp` | `skill_name`, `new_level` | Leveled up! |
 | `Pong` | `timestamp`, `server_tick` | Ping response |
 
 ## Multiplayer Setup

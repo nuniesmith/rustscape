@@ -1,0 +1,70 @@
+{
+  "npc_id": 0,
+  "npc_name": "Hans",
+  "dialogues": [
+    {
+      "id": 0,
+      "trigger": "greeting",
+      "text": "Hello! Welcome to Lumbridge. I've been the curator of this fine town for many years now.",
+      "options": [
+        {
+          "text": "Tell me about Lumbridge.",
+          "next_dialogue": 1
+        },
+        {
+          "text": "How long have you lived here?",
+          "next_dialogue": 2
+        },
+        {
+          "text": "Goodbye.",
+          "next_dialogue": null
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "trigger": "about_lumbridge",
+      "text": "Lumbridge is a fine town indeed! We have a grand castle, a church, and even a general store. Many adventurers start their journey here.",
+      "options": [
+        {
+          "text": "What should I do first?",
+          "next_dialogue": 3
+        },
+        {
+          "text": "Thanks for the information.",
+          "next_dialogue": null
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "trigger": "how_long",
+      "text": "Oh, I've been here for as long as I can remember! I know every cobblestone in this town. I take great pride in keeping Lumbridge a safe place for new adventurers.",
+      "options": [
+        {
+          "text": "Tell me about Lumbridge.",
+          "next_dialogue": 1
+        },
+        {
+          "text": "Goodbye.",
+          "next_dialogue": null
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "trigger": "what_to_do",
+      "text": "Well, you could explore the area around Lumbridge. There are trees to chop, fishing spots by the river, and even some chickens if you're looking to practice your combat skills!",
+      "options": [
+        {
+          "text": "That sounds great, thanks!",
+          "next_dialogue": null
+        },
+        {
+          "text": "Tell me more about the area.",
+          "next_dialogue": 1
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1740 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Rustscape</title>
+        <link
+            rel="icon"
+            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>"
+        />
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: "Courier New", monospace;
+                background: #2b2b2b;
+                color: #fff;
+                overflow: hidden;
+                user-select: none;
+            }
+
+            #game-container {
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                background: #1a1a1a;
+            }
+
+            /* Top Bar */
+            #top-bar {
+                background: linear-gradient(180deg, #4a4a4a 0%, #3a3a3a 100%);
+                padding: 8px 16px;
+                border-bottom: 2px solid #000;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            #top-bar h1 {
+                font-size: 20px;
+                color: #ffcc00;
+                text-shadow: 2px 2px 0px #000;
+            }
+
+            #connection-status {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .status-indicator {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: #ff4444;
+                box-shadow: 0 0 8px rgba(255, 68, 68, 0.8);
+            }
+
+            .status-indicator.connected {
+                background: #44ff44;
+                box-shadow: 0 0 8px rgba(68, 255, 68, 0.8);
+            }
+
+            #login-panel {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%);
+                border: 3px solid #000;
+                border-radius: 8px;
+                padding: 30px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+                z-index: 1000;
+            }
+
+            #login-panel.hidden {
+                display: none;
+            }
+
+            #login-panel h2 {
+                color: #ffcc00;
+                margin-bottom: 20px;
+                text-align: center;
+                text-shadow: 2px 2px 0px #000;
+            }
+
+            #login-panel input {
+                width: 100%;
+                padding: 10px;
+                margin-bottom: 15px;
+                background: #1a1a1a;
+                border: 2px solid #555;
+                color: #fff;
+                border-radius: 4px;
+                font-family: "Courier New", monospace;
+            }
+
+            #login-panel button {
+                width: 100%;
+                padding: 12px;
+                background: linear-gradient(180deg, #5a5a5a 0%, #3a3a3a 100%);
+                border: 2px solid #000;
+                color: #ffcc00;
+                font-weight: bold;
+                cursor: pointer;
+                border-radius: 4px;
+                font-family: "Courier New", monospace;
+                font-size: 14px;
+            }
+
+            #login-panel button:hover {
+                background: linear-gradient(180deg, #6a6a6a 0%, #4a4a4a 100%);
+            }
+
+            /* Main Game Area */
+            #main-game {
+                display: flex;
+                flex: 1;
+                overflow: hidden;
+            }
+
+            /* Game View */
+            #game-view {
+                flex: 1;
+                position: relative;
+                background: #1a1a1a;
+            }
+
+            #game-canvas {
+                display: block;
+                width: 100%;
+                height: 100%;
+                image-rendering: pixelated;
+                cursor: crosshair;
+            }
+
+            #hover-text {
+                position: absolute;
+                background: rgba(0, 0, 0, 0.8);
+                color: #ffcc00;
+                padding: 4px 8px;
+                border: 1px solid #000;
+                border-radius: 3px;
+                pointer-events: none;
+                font-size: 12px;
+                white-space: nowrap;
+                display: none;
+            }
+
+            /* Right Sidebar */
+            #sidebar {
+                width: 250px;
+                background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+                border-left: 2px solid #000;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .panel {
+                border-bottom: 2px solid #000;
+                padding: 10px;
+            }
+
+            .panel h3 {
+                color: #ffcc00;
+                margin-bottom: 8px;
+                font-size: 14px;
+                text-shadow: 1px 1px 0px #000;
+            }
+
+            /* Stats Panel */
+            #stats-panel {
+                flex-shrink: 0;
+            }
+
+            .stat-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 4px;
+                font-size: 12px;
+            }
+
+            .stat-label {
+                color: #aaa;
+            }
+
+            .stat-value {
+                color: #fff;
+                font-weight: bold;
+            }
+
+            .hp-bar {
+                width: 100%;
+                height: 20px;
+                background: #1a1a1a;
+                border: 1px solid #000;
+                margin-top: 5px;
+                position: relative;
+                border-radius: 3px;
+                overflow: hidden;
+            }
+
+            .hp-bar-fill {
+                height: 100%;
+                background: linear-gradient(180deg, #ff4444 0%, #cc0000 100%);
+                transition: width 0.3s ease;
+            }
+
+            .hp-text {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: #fff;
+                font-size: 11px;
+                font-weight: bold;
+                text-shadow: 1px 1px 0px #000;
+            }
+
+            /* Skills Panel */
+            #skills-panel {
+                flex: 1;
+                overflow-y: auto;
+            }
+
+            .skill-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 4px;
+                margin-bottom: 2px;
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 2px;
+                font-size: 11px;
+            }
+
+            .skill-name {
+                color: #aaa;
+            }
+
+            .skill-level {
+                color: #00ff00;
+                font-weight: bold;
+            }
+
+            .skill-xp {
+                color: #888;
+                font-size: 10px;
+            }
+
+            /* Inventory Panel */
+            #inventory-panel {
+                flex-shrink: 0;
+                max-height: 200px;
+            }
+
+            #inventory-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 4px;
+            }
+
+            .inventory-slot {
+                aspect-ratio: 1;
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid #555;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+                color: #fff;
+                cursor: pointer;
+                position: relative;
+                border-radius: 2px;
+            }
+
+            .inventory-slot:hover {
+                border-color: #ffcc00;
+                background: rgba(255, 204, 0, 0.1);
+            }
+
+            .inventory-slot .item-count {
+                position: absolute;
+                bottom: 2px;
+                right: 2px;
+                font-size: 9px;
+                color: #ffff00;
+                text-shadow: 1px 1px 0px #000;
+            }
+
+            /* Chat Box */
+            #chat-box {
+                height: 150px;
+                background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+                border-top: 2px solid #000;
+                display: flex;
+                flex-direction: column;
+            }
+
+            #chat-messages {
+                flex: 1;
+                overflow-y: auto;
+                padding: 8px;
+                font-size: 12px;
+                line-height: 1.4;
+            }
+
+            .chat-message {
+                margin-bottom: 3px;
+            }
+
+            .chat-server {
+                color: #ff9900;
+            }
+
+            .chat-player {
+                color: #00ffff;
+            }
+
+            .chat-npc {
+                color: #ffff00;
+            }
+
+            .chat-combat {
+                color: #ff4444;
+            }
+
+            .chat-xp {
+                color: #00ff00;
+            }
+
+            .chat-level {
+                color: #00ff00;
+                font-weight: bold;
+            }
+
+            #chat-input-container {
+                display: flex;
+                padding: 8px;
+                background: rgba(0, 0, 0, 0.3);
+            }
+
+            #chat-input {
+                flex: 1;
+                padding: 6px;
+                background: #1a1a1a;
+                border: 1px solid #555;
+                color: #fff;
+                border-radius: 3px;
+                font-family: "Courier New", monospace;
+                font-size: 12px;
+            }
+
+            #chat-send {
+                margin-left: 8px;
+                padding: 6px 16px;
+                background: linear-gradient(180deg, #5a5a5a 0%, #3a3a3a 100%);
+                border: 1px solid #000;
+                color: #ffcc00;
+                cursor: pointer;
+                border-radius: 3px;
+                font-family: "Courier New", monospace;
+            }
+
+            #chat-send:hover {
+                background: linear-gradient(180deg, #6a6a6a 0%, #4a4a4a 100%);
+            }
+
+            /* Scrollbar Styling */
+            ::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: #1a1a1a;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: #555;
+                border-radius: 4px;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #666;
+            }
+
+            /* Notification */
+            .notification {
+                position: fixed;
+                top: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.9);
+                color: #00ff00;
+                padding: 15px 30px;
+                border: 2px solid #00ff00;
+                border-radius: 5px;
+                font-size: 16px;
+                font-weight: bold;
+                z-index: 2000;
+                animation: slideDown 0.3s ease;
+            }
+
+            @keyframes slideDown {
+                from {
+                    transform: translateX(-50%) translateY(-100px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(-50%) translateY(0);
+                    opacity: 1;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="game-container">
+            <!-- Top Bar -->
+            <div id="top-bar">
+                <h1>🎮 RUSTSCAPE</h1>
+                <div id="connection-status">
+                    <span id="player-name"></span>
+                    <div class="status-indicator" id="status-dot"></div>
+                    <span id="status-text">Disconnected</span>
+                </div>
+            </div>
+
+            <!-- Login Panel -->
+            <div id="login-panel">
+                <h2>Welcome to Rustscape</h2>
+                <input
+                    type="text"
+                    id="username-input"
+                    placeholder="Username"
+                    value="Player1"
+                />
+                <input
+                    type="password"
+                    id="password-input"
+                    placeholder="Password"
+                    value="password"
+                />
+                <button id="login-btn">Login</button>
+            </div>
+
+            <!-- Main Game -->
+            <div id="main-game">
+                <!-- Game View -->
+                <div id="game-view">
+                    <canvas id="game-canvas"></canvas>
+                    <div id="hover-text"></div>
+                </div>
+
+                <!-- Sidebar -->
+                <div id="sidebar">
+                    <!-- Stats Panel -->
+                    <div class="panel" id="stats-panel">
+                        <h3>Player Stats</h3>
+                        <div class="stat-row">
+                            <span class="stat-label">Position:</span>
+                            <span class="stat-value" id="stat-position"
+                                >0, 0</span
+                            >
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Combat Level:</span>
+                            <span class="stat-value" id="stat-combat">3</span>
+                        </div>
+                        <div class="hp-bar">
+                            <div
+                                class="hp-bar-fill"
+                                id="hp-fill"
+                                style="width: 100%"
+                            ></div>
+                            <div class="hp-text" id="hp-text">100 / 100</div>
+                        </div>
+                    </div>
+
+                    <!-- Skills Panel -->
+                    <div class="panel" id="skills-panel">
+                        <h3>Skills</h3>
+                        <div id="skills-list">
+                            <div class="skill-row">
+                                <span class="skill-name">Attack</span>
+                                <span class="skill-level" id="skill-attack"
+                                    >1</span
+                                >
+                            </div>
+                            <div class="skill-row">
+                                <span class="skill-name">Strength</span>
+                                <span class="skill-level" id="skill-strength"
+                                    >1</span
+                                >
+                            </div>
+                            <div class="skill-row">
+                                <span class="skill-name">Defence</span>
+                                <span class="skill-level" id="skill-defence"
+                                    >1</span
+                                >
+                            </div>
+                            <div class="skill-row">
+                                <span class="skill-name">Hitpoints</span>
+                                <span class="skill-level" id="skill-hitpoints"
+                                    >10</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Panel -->
+                    <div class="panel" id="inventory-panel">
+                        <h3>Inventory</h3>
+                        <div id="inventory-grid">
+                            <!-- 28 slots -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Box -->
+            <div id="chat-box">
+                <div id="chat-messages"></div>
+                <div id="chat-input-container">
+                    <input
+                        type="text"
+                        id="chat-input"
+                        placeholder="Type a message..."
+                    />
+                    <button id="chat-send">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Game State
+            const gameState = {
+                ws: null,
+                connected: false,
+                playerId: null,
+                playerUsername: null,
+                playerPos: { x: 3094, y: 3107, z: 0 }, // Tutorial Island start
+                players: new Map(),
+                npcs: new Map(),
+                groundItems: new Map(),
+                inventory: [],
+                skills: {
+                    attack: { level: 1, xp: 0 },
+                    strength: { level: 1, xp: 0 },
+                    defence: { level: 1, xp: 0 },
+                    hitpoints: { level: 10, xp: 1154 },
+                },
+                currentHp: 100,
+                maxHp: 100,
+                combat: {
+                    target: null,
+                    inCombat: false,
+                },
+                isInTutorial: true,
+            };
+
+            // Terrain tile types
+            const TERRAIN = {
+                GRASS: 0,
+                DIRT: 1,
+                WATER: 2,
+                STONE: 3,
+                SAND: 4,
+                TREE: 5,
+                ROCK: 6,
+            };
+
+            // Simple terrain map (for Tutorial Island and Lumbridge)
+            // Returns terrain type based on position
+            function getTerrainType(x, y) {
+                // Tutorial Island (3090-3110, 3090-3120)
+                if (x >= 3090 && x <= 3110 && y >= 3090 && y <= 3120) {
+                    // Water around edges
+                    if (x <= 3091 || x >= 3109 || y <= 3091 || y >= 3119) {
+                        return TERRAIN.WATER;
+                    }
+                    // Path down the middle
+                    if (x === 3100 || x === 3101) {
+                        return TERRAIN.DIRT;
+                    }
+                    // Some rocks
+                    if (
+                        (x === 3095 && y === 3105) ||
+                        (x === 3105 && y === 3115)
+                    ) {
+                        return TERRAIN.ROCK;
+                    }
+                    // Trees
+                    if (
+                        (x === 3093 && y === 3100) ||
+                        (x === 3107 && y === 3110)
+                    ) {
+                        return TERRAIN.TREE;
+                    }
+                    return TERRAIN.GRASS;
+                }
+
+                // Lumbridge area (3210-3240, 3210-3240)
+                if (x >= 3210 && x <= 3240 && y >= 3210 && y <= 3240) {
+                    // River through middle
+                    if (x >= 3240 && x <= 3242) {
+                        return TERRAIN.WATER;
+                    }
+                    // Castle area (stone)
+                    if (x >= 3206 && x <= 3210 && y >= 3206 && y <= 3230) {
+                        return TERRAIN.STONE;
+                    }
+                    // Roads
+                    if (x === 3222 || y === 3218) {
+                        return TERRAIN.DIRT;
+                    }
+                    // Some trees
+                    if (
+                        (x % 7 === 0 && y % 5 === 0) ||
+                        (x % 9 === 0 && y % 7 === 0)
+                    ) {
+                        return TERRAIN.TREE;
+                    }
+                    return TERRAIN.GRASS;
+                }
+
+                // Default
+                return TERRAIN.GRASS;
+            }
+
+            // Get color for terrain type
+            function getTerrainColor(terrain) {
+                switch (terrain) {
+                    case TERRAIN.GRASS:
+                        return "#2d5016";
+                    case TERRAIN.DIRT:
+                        return "#5c4033";
+                    case TERRAIN.WATER:
+                        return "#1e4d7b";
+                    case TERRAIN.STONE:
+                        return "#888888";
+                    case TERRAIN.SAND:
+                        return "#c2b280";
+                    case TERRAIN.TREE:
+                        return "#1a3d0a";
+                    case TERRAIN.ROCK:
+                        return "#666666";
+                    default:
+                        return "#2d5016";
+                }
+            }
+
+            // Check if tile is walkable
+            function isWalkable(terrain) {
+                return (
+                    terrain !== TERRAIN.WATER &&
+                    terrain !== TERRAIN.TREE &&
+                    terrain !== TERRAIN.ROCK
+                );
+            }
+
+            // Canvas and Rendering
+            const canvas = document.getElementById("game-canvas");
+            const ctx = canvas.getContext("2d");
+            const TILE_SIZE = 32;
+            const VIEW_RANGE = 15;
+
+            function resizeCanvas() {
+                const container = document.getElementById("game-view");
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+                render();
+            }
+
+            window.addEventListener("resize", resizeCanvas);
+            resizeCanvas();
+
+            // Render the game
+            function render() {
+                // Clear background
+                ctx.fillStyle = "#0a0a0a";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+
+                const startX = gameState.playerPos.x - VIEW_RANGE;
+                const startY = gameState.playerPos.y - VIEW_RANGE;
+                const endX = gameState.playerPos.x + VIEW_RANGE;
+                const endY = gameState.playerPos.y + VIEW_RANGE;
+
+                // Draw terrain tiles
+                for (let y = startY; y <= endY; y++) {
+                    for (let x = startX; x <= endX; x++) {
+                        const screenX =
+                            centerX + (x - gameState.playerPos.x) * TILE_SIZE;
+                        const screenY =
+                            centerY + (y - gameState.playerPos.y) * TILE_SIZE;
+
+                        const terrain = getTerrainType(x, y);
+                        ctx.fillStyle = getTerrainColor(terrain);
+                        ctx.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+
+                        // Add darker border for that classic tile look
+                        ctx.strokeStyle = "rgba(0, 0, 0, 0.15)";
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+
+                        // Draw terrain details with OSRS-style
+                        if (terrain === TERRAIN.TREE) {
+                            // Tree trunk (brown)
+                            ctx.fillStyle = "#6b4423";
+                            ctx.fillRect(screenX + 13, screenY + 19, 6, 9);
+                            // Tree canopy (darker green, more detailed)
+                            ctx.fillStyle = "#2d5016";
+                            ctx.beginPath();
+                            ctx.arc(
+                                screenX + 16,
+                                screenY + 14,
+                                9,
+                                0,
+                                Math.PI * 2,
+                            );
+                            ctx.fill();
+                            // Lighter green highlight
+                            ctx.fillStyle = "#3a6b1f";
+                            ctx.beginPath();
+                            ctx.arc(
+                                screenX + 14,
+                                screenY + 12,
+                                4,
+                                0,
+                                Math.PI * 2,
+                            );
+                            ctx.fill();
+                        } else if (terrain === TERRAIN.ROCK) {
+                            // Rock with shading
+                            ctx.fillStyle = "#757575";
+                            ctx.beginPath();
+                            ctx.arc(
+                                screenX + 16,
+                                screenY + 16,
+                                9,
+                                0,
+                                Math.PI * 2,
+                            );
+                            ctx.fill();
+                            // Darker shadow
+                            ctx.fillStyle = "#555555";
+                            ctx.beginPath();
+                            ctx.arc(
+                                screenX + 18,
+                                screenY + 18,
+                                5,
+                                0,
+                                Math.PI * 2,
+                            );
+                            ctx.fill();
+                            // Light highlight
+                            ctx.fillStyle = "#8a8a8a";
+                            ctx.beginPath();
+                            ctx.arc(
+                                screenX + 14,
+                                screenY + 14,
+                                3,
+                                0,
+                                Math.PI * 2,
+                            );
+                            ctx.fill();
+                        } else if (terrain === TERRAIN.WATER) {
+                            // Water waves (animated-looking pattern)
+                            ctx.strokeStyle = "#2a5d9b";
+                            ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.moveTo(screenX + 4, screenY + 10);
+                            ctx.quadraticCurveTo(
+                                screenX + 10,
+                                screenY + 8,
+                                screenX + 16,
+                                screenY + 10,
+                            );
+                            ctx.stroke();
+                            ctx.beginPath();
+                            ctx.moveTo(screenX + 8, screenY + 18);
+                            ctx.quadraticCurveTo(
+                                screenX + 14,
+                                screenY + 18,
+                                screenX + 20,
+                                screenY + 18,
+                                screenX + 20,
+                                screenY + 18,
+                            );
+                            ctx.stroke();
+                            ctx.beginPath();
+                            ctx.moveTo(screenX + 16, screenY + 24);
+                            ctx.quadraticCurveTo(
+                                screenX + 22,
+                                screenY + 22,
+                                screenX + 28,
+                                screenY + 24,
+                            );
+                            ctx.stroke();
+                        } else if (terrain === TERRAIN.DIRT) {
+                            // Add some texture to dirt paths
+                            ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+                            ctx.fillRect(screenX + 8, screenY + 12, 2, 2);
+                            ctx.fillRect(screenX + 18, screenY + 20, 2, 2);
+                            ctx.fillRect(screenX + 22, screenY + 8, 2, 2);
+                        }
+                    }
+                }
+
+                // Draw ground items
+                gameState.groundItems.forEach((item, id) => {
+                    if (item.z !== gameState.playerPos.z) return;
+
+                    const screenX =
+                        centerX + (item.x - gameState.playerPos.x) * TILE_SIZE;
+                    const screenY =
+                        centerY + (item.y - gameState.playerPos.y) * TILE_SIZE;
+
+                    // Ground item sprite with OSRS-style rendering
+                    // Shadow
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+                    ctx.fillRect(screenX + 13, screenY + 23, TILE_SIZE - 20, 3);
+
+                    // Item sprite (small square with highlight)
+                    ctx.fillStyle = "#cc8800";
+                    ctx.fillRect(
+                        screenX + 12,
+                        screenY + 12,
+                        TILE_SIZE - 24,
+                        TILE_SIZE - 24,
+                    );
+
+                    // Item highlight
+                    ctx.fillStyle = "#ffaa00";
+                    ctx.fillRect(screenX + 13, screenY + 13, 4, 4);
+
+                    // Darker outline
+                    ctx.strokeStyle = "#000000";
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(
+                        screenX + 12,
+                        screenY + 12,
+                        TILE_SIZE - 24,
+                        TILE_SIZE - 24,
+                    );
+
+                    // Item name
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 9px Courier New";
+                    ctx.textAlign = "center";
+                    ctx.shadowColor = "#000000";
+                    ctx.shadowBlur = 2;
+                    ctx.fillText(
+                        item.name || "Item",
+                        screenX + TILE_SIZE / 2,
+                        screenY + TILE_SIZE - 3,
+                    );
+                    ctx.shadowBlur = 0;
+                });
+
+                // Draw NPCs
+                gameState.npcs.forEach((npc, id) => {
+                    if (npc.z !== gameState.playerPos.z) return;
+
+                    const screenX =
+                        centerX + (npc.x - gameState.playerPos.x) * TILE_SIZE;
+                    const screenY =
+                        centerY + (npc.y - gameState.playerPos.y) * TILE_SIZE;
+
+                    // NPC sprite with OSRS-style rendering
+                    // Shadow
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+                    ctx.fillRect(
+                        screenX + 10,
+                        screenY + TILE_SIZE - 6,
+                        TILE_SIZE - 20,
+                        3,
+                    );
+
+                    // NPC body (orange/red)
+                    ctx.fillStyle = "#cc5500";
+                    ctx.fillRect(
+                        screenX + 8,
+                        screenY + 8,
+                        TILE_SIZE - 16,
+                        TILE_SIZE - 16,
+                    );
+
+                    // Body highlight
+                    ctx.fillStyle = "#ff6600";
+                    ctx.fillRect(screenX + 9, screenY + 9, 6, 6);
+
+                    // Darker outline
+                    ctx.strokeStyle = "#000000";
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(
+                        screenX + 8,
+                        screenY + 8,
+                        TILE_SIZE - 16,
+                        TILE_SIZE - 16,
+                    );
+
+                    // NPC name
+                    ctx.fillStyle = "#ffff00";
+                    ctx.font = "bold 10px Courier New";
+                    ctx.textAlign = "center";
+                    ctx.shadowColor = "#000000";
+                    ctx.shadowBlur = 2;
+                    ctx.fillText(
+                        npc.name || `NPC ${id}`,
+                        screenX + TILE_SIZE / 2,
+                        screenY - 5,
+                    );
+                    ctx.shadowBlur = 0;
+
+                    // HP bar for NPCs
+                    if (npc.hp !== undefined && npc.max_hp !== undefined) {
+                        const hpPercent = npc.hp / npc.max_hp;
+                        const barWidth = TILE_SIZE - 8;
+                        // Black background
+                        ctx.fillStyle = "#000000";
+                        ctx.fillRect(
+                            screenX + 4,
+                            screenY + TILE_SIZE + 2,
+                            barWidth,
+                            5,
+                        );
+                        // HP fill
+                        ctx.fillStyle =
+                            hpPercent > 0.5
+                                ? "#00ff00"
+                                : hpPercent > 0.25
+                                  ? "#ffaa00"
+                                  : "#ff0000";
+                        ctx.fillRect(
+                            screenX + 4,
+                            screenY + TILE_SIZE + 2,
+                            barWidth * hpPercent,
+                            5,
+                        );
+                        // Border
+                        ctx.strokeStyle = "#000000";
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(
+                            screenX + 4,
+                            screenY + TILE_SIZE + 2,
+                            barWidth,
+                            5,
+                        );
+                    }
+                });
+
+                // Draw other players
+                gameState.players.forEach((player, id) => {
+                    if (id === gameState.playerId) return;
+                    if (player.z !== gameState.playerPos.z) return;
+
+                    const screenX =
+                        centerX +
+                        (player.x - gameState.playerPos.x) * TILE_SIZE;
+                    const screenY =
+                        centerY +
+                        (player.y - gameState.playerPos.y) * TILE_SIZE;
+
+                    // Other player sprite with OSRS-style rendering
+                    // Shadow
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+                    ctx.fillRect(
+                        screenX + 10,
+                        screenY + TILE_SIZE - 6,
+                        TILE_SIZE - 20,
+                        3,
+                    );
+
+                    // Player body (cyan/blue)
+                    ctx.fillStyle = "#0088cc";
+                    ctx.fillRect(
+                        screenX + 8,
+                        screenY + 8,
+                        TILE_SIZE - 16,
+                        TILE_SIZE - 16,
+                    );
+
+                    // Body highlight
+                    ctx.fillStyle = "#00aaff";
+                    ctx.fillRect(screenX + 9, screenY + 9, 6, 6);
+
+                    // Darker outline
+                    ctx.strokeStyle = "#000000";
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(
+                        screenX + 8,
+                        screenY + 8,
+                        TILE_SIZE - 16,
+                        TILE_SIZE - 16,
+                    );
+
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "bold 10px Courier New";
+                    ctx.textAlign = "center";
+                    ctx.shadowColor = "#000000";
+                    ctx.shadowBlur = 2;
+                    ctx.fillText(
+                        player.username || `Player ${id}`,
+                        screenX + TILE_SIZE / 2,
+                        screenY - 5,
+                    );
+                    ctx.shadowBlur = 0;
+                });
+
+                // Draw local player with OSRS-style rendering
+                // Shadow
+                ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+                ctx.fillRect(
+                    centerX + 10,
+                    centerY + TILE_SIZE - 6,
+                    TILE_SIZE - 20,
+                    3,
+                );
+
+                // Player body (yellow/gold)
+                ctx.fillStyle = "#cc9900";
+                ctx.fillRect(
+                    centerX + 8,
+                    centerY + 8,
+                    TILE_SIZE - 16,
+                    TILE_SIZE - 16,
+                );
+
+                // Body highlight
+                ctx.fillStyle = "#ffcc00";
+                ctx.fillRect(centerX + 9, centerY + 9, 6, 6);
+
+                // Darker outline
+                ctx.strokeStyle = "#000000";
+                ctx.lineWidth = 1;
+                ctx.strokeRect(
+                    centerX + 8,
+                    centerY + 8,
+                    TILE_SIZE - 16,
+                    TILE_SIZE - 16,
+                );
+
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 10px Courier New";
+                ctx.textAlign = "center";
+                ctx.shadowColor = "#000000";
+                ctx.shadowBlur = 2;
+                ctx.fillText(
+                    gameState.playerUsername || "Player",
+                    centerX + TILE_SIZE / 2,
+                    centerY - 5,
+                );
+                ctx.shadowBlur = 0;
+            }
+
+            // Canvas click handler
+            canvas.addEventListener("click", (e) => {
+                if (!gameState.connected) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+
+                const tileX = Math.floor((clickX - centerX) / TILE_SIZE);
+                const tileY = Math.floor((clickY - centerY) / TILE_SIZE);
+
+                const worldX = gameState.playerPos.x + tileX;
+                const worldY = gameState.playerPos.y + tileY;
+
+                // Check if clicking on NPC
+                let clickedNpc = null;
+                gameState.npcs.forEach((npc, id) => {
+                    if (
+                        npc.x === worldX &&
+                        npc.y === worldY &&
+                        npc.z === gameState.playerPos.z
+                    ) {
+                        clickedNpc = { id, npc };
+                    }
+                });
+
+                if (clickedNpc) {
+                    // Attack NPC
+                    send({ type: "Attack", target: { Npc: clickedNpc.id } });
+                    addChatMessage(
+                        `Attacking ${clickedNpc.npc.name}...`,
+                        "combat",
+                    );
+                    return;
+                }
+
+                // Check if clicking on ground item
+                let clickedItem = null;
+                gameState.groundItems.forEach((item, id) => {
+                    if (
+                        item.x === worldX &&
+                        item.y === worldY &&
+                        item.z === gameState.playerPos.z
+                    ) {
+                        clickedItem = { id, item };
+                    }
+                });
+
+                if (clickedItem) {
+                    send({
+                        type: "PickupItem",
+                        ground_item_id: clickedItem.id,
+                    });
+                    return;
+                }
+
+                // Check if tile is walkable
+                const terrain = getTerrainType(worldX, worldY);
+                if (!isWalkable(terrain)) {
+                    addChatMessage("You cannot walk there.", "server");
+                    return;
+                }
+
+                // Move to position
+                send({
+                    type: "Move",
+                    x: worldX,
+                    y: worldY,
+                    z: gameState.playerPos.z,
+                });
+            });
+
+            // Canvas hover handler
+            canvas.addEventListener("mousemove", (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+
+                const tileX = Math.floor((mouseX - centerX) / TILE_SIZE);
+                const tileY = Math.floor((mouseY - centerY) / TILE_SIZE);
+
+                const worldX = gameState.playerPos.x + tileX;
+                const worldY = gameState.playerPos.y + tileY;
+
+                const hoverText = document.getElementById("hover-text");
+                const terrain = getTerrainType(worldX, worldY);
+
+                // Check NPCs
+                let found = false;
+                gameState.npcs.forEach((npc, id) => {
+                    if (
+                        npc.x === worldX &&
+                        npc.y === worldY &&
+                        npc.z === gameState.playerPos.z
+                    ) {
+                        hoverText.textContent = `${npc.name} (Level ${npc.combat_level || "?"})`;
+                        hoverText.style.left =
+                            e.clientX - rect.left + 15 + "px";
+                        hoverText.style.top = e.clientY - rect.top + 15 + "px";
+                        hoverText.style.display = "block";
+                        found = true;
+                    }
+                });
+
+                if (!found) {
+                    gameState.groundItems.forEach((item, id) => {
+                        if (
+                            item.x === worldX &&
+                            item.y === worldY &&
+                            item.z === gameState.playerPos.z
+                        ) {
+                            hoverText.textContent = `${item.name} x${item.amount || 1}`;
+                            hoverText.style.left =
+                                e.clientX - rect.left + 15 + "px";
+                            hoverText.style.top =
+                                e.clientY - rect.top + 15 + "px";
+                            hoverText.style.display = "block";
+                            found = true;
+                        }
+                    });
+                }
+
+                if (!found) {
+                    // Show terrain type
+                    let terrainName = "";
+                    switch (terrain) {
+                        case TERRAIN.WATER:
+                            terrainName = "Water";
+                            break;
+                        case TERRAIN.TREE:
+                            terrainName = "Tree";
+                            break;
+                        case TERRAIN.ROCK:
+                            terrainName = "Rock";
+                            break;
+                        case TERRAIN.DIRT:
+                            terrainName = "Path";
+                            break;
+                        case TERRAIN.STONE:
+                            terrainName = "Stone floor";
+                            break;
+                        case TERRAIN.SAND:
+                            terrainName = "Sand";
+                            break;
+                        default:
+                            terrainName = "Grass";
+                            break;
+                    }
+                    hoverText.textContent = terrainName;
+                    hoverText.style.left = e.clientX - rect.left + 15 + "px";
+                    hoverText.style.top = e.clientY - rect.top + 15 + "px";
+                    hoverText.style.display = "block";
+                }
+            });
+
+            // WebSocket Functions
+            function connect() {
+                const username =
+                    document.getElementById("username-input").value;
+                const password =
+                    document.getElementById("password-input").value;
+
+                gameState.ws = new WebSocket("ws://localhost:8080/ws");
+
+                gameState.ws.onopen = () => {
+                    addChatMessage("Connected to server", "server");
+                    send({ type: "Login", username, password });
+                };
+
+                gameState.ws.onmessage = (event) => {
+                    try {
+                        const packet = JSON.parse(event.data);
+                        handlePacket(packet);
+                    } catch (error) {
+                        console.error("Error parsing packet:", error);
+                        addChatMessage(
+                            "Error receiving data from server",
+                            "server",
+                        );
+                    }
+                };
+
+                gameState.ws.onclose = () => {
+                    gameState.connected = false;
+                    updateConnectionStatus();
+                    addChatMessage("Disconnected from server", "server");
+                };
+
+                gameState.ws.onerror = (error) => {
+                    addChatMessage("Connection error", "server");
+                };
+            }
+
+            function send(data) {
+                if (
+                    gameState.ws &&
+                    gameState.ws.readyState === WebSocket.OPEN
+                ) {
+                    gameState.ws.send(JSON.stringify(data));
+                }
+            }
+
+            function handlePacket(packet) {
+                if (!packet || !packet.type) {
+                    console.error("Received invalid packet:", packet);
+                    return;
+                }
+
+                try {
+                    handlePacketInternal(packet);
+                } catch (error) {
+                    console.error("Error handling packet:", packet.type, error);
+                    addChatMessage(`Error processing ${packet.type}`, "server");
+                }
+            }
+
+            function handlePacketInternal(packet) {
+                switch (packet.type) {
+                    case "LoginSuccess":
+                        gameState.playerId = packet.player_id;
+                        gameState.playerUsername = packet.username;
+                        gameState.playerPos = packet.position;
+                        gameState.connected = true;
+                        document
+                            .getElementById("login-panel")
+                            .classList.add("hidden");
+                        document.getElementById("player-name").textContent =
+                            packet.username || "Player";
+                        updateConnectionStatus();
+
+                        // Check if in Tutorial Island area
+                        if (
+                            packet.position.x >= 3090 &&
+                            packet.position.x <= 3110 &&
+                            packet.position.y >= 3090 &&
+                            packet.position.y <= 3120
+                        ) {
+                            gameState.isInTutorial = true;
+                            addChatMessage(
+                                `Welcome to Tutorial Island, ${gameState.playerUsername}!`,
+                                "server",
+                            );
+                            addChatMessage(
+                                "Click on the ground to move around.",
+                                "server",
+                            );
+                            addChatMessage(
+                                "This is where you will learn the basics.",
+                                "server",
+                            );
+                        } else {
+                            gameState.isInTutorial = false;
+                            addChatMessage(
+                                `Welcome to Lumbridge, ${gameState.playerUsername}!`,
+                                "server",
+                            );
+                        }
+
+                        // Request initial data
+                        send({ type: "RequestPlayers" });
+                        send({ type: "RequestNpcs" });
+                        send({ type: "RequestGroundItems" });
+
+                        updateUI();
+                        render();
+                        break;
+
+                    case "PlayerMoved":
+                        if (!packet.new_position) {
+                            console.error(
+                                "PlayerMoved packet missing position",
+                            );
+                            break;
+                        }
+                        if (packet.player_id === gameState.playerId) {
+                            gameState.playerPos = packet.new_position;
+                            updateUI();
+                        } else {
+                            const player = gameState.players.get(
+                                packet.player_id,
+                            );
+                            if (player) {
+                                player.x = packet.new_position.x;
+                                player.y = packet.new_position.y;
+                                player.z = packet.new_position.z;
+                            }
+                        }
+                        render();
+                        break;
+
+                    case "PlayersList":
+                        if (packet.players && Array.isArray(packet.players)) {
+                            packet.players.forEach((p) => {
+                                if (p.id !== gameState.playerId && p.position) {
+                                    gameState.players.set(p.id, {
+                                        x: p.position.x,
+                                        y: p.position.y,
+                                        z: p.position.z,
+                                        username: p.username,
+                                    });
+                                }
+                            });
+                        }
+                        render();
+                        break;
+
+                    case "PlayerEnter":
+                        if (
+                            packet.player_id !== gameState.playerId &&
+                            packet.position
+                        ) {
+                            gameState.players.set(packet.player_id, {
+                                x: packet.position.x,
+                                y: packet.position.y,
+                                z: packet.position.z,
+                                username: packet.username,
+                            });
+                            addChatMessage(
+                                `${packet.username} has logged in`,
+                                "server",
+                            );
+                        }
+                        render();
+                        break;
+
+                    case "PlayerLeft":
+                        gameState.players.delete(packet.player_id);
+                        addChatMessage(
+                            `${packet.username} has logged out`,
+                            "server",
+                        );
+                        render();
+                        break;
+
+                    case "NpcsList":
+                        gameState.npcs.clear();
+                        if (packet.npcs && Array.isArray(packet.npcs)) {
+                            packet.npcs.forEach((npc) => {
+                                if (npc.position) {
+                                    gameState.npcs.set(npc.id, {
+                                        x: npc.position.x,
+                                        y: npc.position.y,
+                                        z: npc.position.z,
+                                        name: npc.name,
+                                        combat_level: npc.combat_level,
+                                        hp: npc.hp,
+                                        max_hp: npc.max_hp,
+                                    });
+                                }
+                            });
+                        }
+                        render();
+                        break;
+
+                    case "NpcMoved":
+                        if (!packet.new_position) {
+                            console.error("NpcMoved packet missing position");
+                            break;
+                        }
+                        const npc = gameState.npcs.get(packet.npc_id);
+                        if (npc) {
+                            npc.x = packet.new_position.x;
+                            npc.y = packet.new_position.y;
+                            npc.z = packet.new_position.z;
+                            render();
+                        }
+                        break;
+
+                    case "GroundItemsList":
+                        gameState.groundItems.clear();
+                        if (packet.items && Array.isArray(packet.items)) {
+                            packet.items.forEach((item) => {
+                                if (item && item.position) {
+                                    gameState.groundItems.set(item.id, {
+                                        x: item.position.x,
+                                        y: item.position.y,
+                                        z: item.position.z,
+                                        name: item.item_name,
+                                        amount: item.amount,
+                                    });
+                                }
+                            });
+                        }
+                        render();
+                        break;
+
+                    case "GroundItemSpawned":
+                        if (packet.position) {
+                            gameState.groundItems.set(packet.ground_item_id, {
+                                x: packet.position.x,
+                                y: packet.position.y,
+                                z: packet.position.z,
+                                name: packet.item_name,
+                                amount: packet.amount,
+                            });
+                            render();
+                        }
+                        break;
+
+                    case "GroundItemRemoved":
+                        gameState.groundItems.delete(packet.ground_item_id);
+                        render();
+                        break;
+
+                    case "InventoryUpdate":
+                        if (packet.items && Array.isArray(packet.items)) {
+                            gameState.inventory = packet.items;
+                            updateInventory();
+                        }
+                        break;
+
+                    case "ChatMessage":
+                        addChatMessage(
+                            `${packet.username}: ${packet.message}`,
+                            "player",
+                        );
+                        break;
+
+                    case "CombatHit":
+                        const isPlayer = packet.target.Player !== undefined;
+                        const targetId = isPlayer
+                            ? packet.target.Player
+                            : packet.target.Npc;
+
+                        if (packet.damage > 0) {
+                            addChatMessage(
+                                `Hit for ${packet.damage} damage!`,
+                                "combat",
+                            );
+                        } else {
+                            addChatMessage(`Missed!`, "combat");
+                        }
+
+                        if (!isPlayer) {
+                            const npcData = gameState.npcs.get(targetId);
+                            if (npcData) {
+                                npcData.hp = Math.max(
+                                    0,
+                                    (npcData.hp || npcData.max_hp) -
+                                        packet.damage,
+                                );
+                            }
+                        }
+                        render();
+                        break;
+
+                    case "Death":
+                        const died =
+                            packet.died.Player !== undefined
+                                ? `Player ${packet.died.Player}`
+                                : gameState.npcs.get(packet.died.Npc)?.name ||
+                                  `NPC ${packet.died.Npc}`;
+
+                        addChatMessage(`${died} has been defeated!`, "combat");
+
+                        if (packet.died.Npc !== undefined) {
+                            gameState.npcs.delete(packet.died.Npc);
+                        }
+                        render();
+                        break;
+
+                    case "XpGain":
+                        const skill = packet.skill.toLowerCase();
+                        if (gameState.skills[skill]) {
+                            gameState.skills[skill].xp += packet.amount;
+                            addChatMessage(
+                                `+${packet.amount} ${packet.skill} XP`,
+                                "xp",
+                            );
+                            updateSkills();
+                        }
+                        break;
+
+                    case "LevelUp":
+                        const levelSkill = packet.skill.toLowerCase();
+                        if (gameState.skills[levelSkill]) {
+                            gameState.skills[levelSkill].level =
+                                packet.new_level;
+                            showNotification(
+                                `${packet.skill} level up! Now level ${packet.new_level}`,
+                            );
+                            addChatMessage(
+                                `Congratulations! Your ${packet.skill} level is now ${packet.new_level}!`,
+                                "level",
+                            );
+                            updateSkills();
+
+                            if (levelSkill === "hitpoints") {
+                                gameState.maxHp = packet.new_level * 10;
+                                gameState.currentHp = gameState.maxHp;
+                                updateHP();
+                            }
+                        }
+                        break;
+
+                    case "HealthUpdate":
+                        gameState.currentHp = packet.current_hp;
+                        gameState.maxHp = packet.max_hp;
+                        updateHP();
+                        break;
+
+                    case "NpcDialogue":
+                        addChatMessage(
+                            `${packet.npc_name}: ${packet.text}`,
+                            "npc",
+                        );
+                        break;
+
+                    case "ExamineText":
+                        addChatMessage(packet.text, "server");
+                        break;
+                }
+            }
+
+            // UI Updates
+            function updateConnectionStatus() {
+                const statusDot = document.getElementById("status-dot");
+                const statusText = document.getElementById("status-text");
+
+                if (gameState.connected) {
+                    statusDot.classList.add("connected");
+                    statusText.textContent = "Connected";
+                } else {
+                    statusDot.classList.remove("connected");
+                    statusText.textContent = "Disconnected";
+                }
+            }
+
+            function updateUI() {
+                document.getElementById("stat-position").textContent =
+                    `${gameState.playerPos.x}, ${gameState.playerPos.y}`;
+
+                const combatLevel = Math.floor(
+                    (gameState.skills.attack.level +
+                        gameState.skills.strength.level +
+                        gameState.skills.defence.level +
+                        gameState.skills.hitpoints.level) /
+                        4,
+                );
+                document.getElementById("stat-combat").textContent =
+                    combatLevel;
+            }
+
+            function updateHP() {
+                const percent = (gameState.currentHp / gameState.maxHp) * 100;
+                document.getElementById("hp-fill").style.width = percent + "%";
+                document.getElementById("hp-text").textContent =
+                    `${gameState.currentHp} / ${gameState.maxHp}`;
+            }
+
+            function updateSkills() {
+                document.getElementById("skill-attack").textContent =
+                    gameState.skills.attack.level;
+                document.getElementById("skill-strength").textContent =
+                    gameState.skills.strength.level;
+                document.getElementById("skill-defence").textContent =
+                    gameState.skills.defence.level;
+                document.getElementById("skill-hitpoints").textContent =
+                    gameState.skills.hitpoints.level;
+            }
+
+            function updateInventory() {
+                const grid = document.getElementById("inventory-grid");
+                grid.innerHTML = "";
+
+                for (let i = 0; i < 28; i++) {
+                    const slot = document.createElement("div");
+                    slot.className = "inventory-slot";
+
+                    const item = gameState.inventory[i];
+                    if (item) {
+                        slot.textContent = item.name.substring(0, 3);
+                        if (item.amount > 1) {
+                            const count = document.createElement("span");
+                            count.className = "item-count";
+                            count.textContent = item.amount;
+                            slot.appendChild(count);
+                        }
+
+                        slot.addEventListener("click", () => {
+                            send({ type: "DropItem", slot: i });
+                        });
+                    }
+
+                    grid.appendChild(slot);
+                }
+            }
+
+            function addChatMessage(message, type = "server") {
+                try {
+                    const messagesDiv =
+                        document.getElementById("chat-messages");
+                    if (!messagesDiv) return;
+
+                    const msgDiv = document.createElement("div");
+                    msgDiv.className = `chat-message chat-${type}`;
+                    msgDiv.textContent = message;
+                    messagesDiv.appendChild(msgDiv);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                } catch (error) {
+                    console.error("Error adding chat message:", error);
+                }
+            }
+
+            function showNotification(message) {
+                const notif = document.createElement("div");
+                notif.className = "notification";
+                notif.textContent = message;
+                document.body.appendChild(notif);
+
+                setTimeout(() => {
+                    notif.remove();
+                }, 3000);
+            }
+
+            // Event Listeners
+            document
+                .getElementById("login-btn")
+                .addEventListener("click", connect);
+
+            document
+                .getElementById("username-input")
+                .addEventListener("keypress", (e) => {
+                    if (e.key === "Enter") connect();
+                });
+
+            document
+                .getElementById("password-input")
+                .addEventListener("keypress", (e) => {
+                    if (e.key === "Enter") connect();
+                });
+
+            document
+                .getElementById("chat-send")
+                .addEventListener("click", () => {
+                    const input = document.getElementById("chat-input");
+                    const message = input.value.trim();
+                    if (message) {
+                        send({ type: "Chat", message });
+                        input.value = "";
+                    }
+                });
+
+            document
+                .getElementById("chat-input")
+                .addEventListener("keypress", (e) => {
+                    if (e.key === "Enter") {
+                        document.getElementById("chat-send").click();
+                    }
+                });
+
+            // Game loop for rendering
+            setInterval(() => {
+                if (gameState.connected) {
+                    render();
+                }
+            }, 100);
+
+            // Initial render
+            render();
+
+            // Global error handler
+            window.addEventListener("error", (event) => {
+                console.error("Global error:", event.error);
+            });
+
+            window.addEventListener("unhandledrejection", (event) => {
+                console.error("Unhandled promise rejection:", event.reason);
+            });
+        </script>
+    </body>
+</html>

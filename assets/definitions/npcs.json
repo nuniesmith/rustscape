@@ -1,0 +1,206 @@
+[
+    {
+        "id": 1,
+        "name": "Man",
+        "combat_level": 2,
+        "examine": "One of the Misthalanian folk.",
+        "attack": 1,
+        "strength": 1,
+        "defence": 1,
+        "hitpoints": 7,
+        "is_aggressive": false,
+        "aggro_range": 0,
+        "loot_table": [
+            {
+                "item_id": 995,
+                "min_amount": 1,
+                "max_amount": 5,
+                "chance": 0.3
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "name": "Woman",
+        "combat_level": 2,
+        "examine": "A woman.",
+        "attack": 1,
+        "strength": 1,
+        "defence": 1,
+        "hitpoints": 7,
+        "is_aggressive": false,
+        "aggro_range": 0,
+        "loot_table": [
+            {
+                "item_id": 995,
+                "min_amount": 1,
+                "max_amount": 5,
+                "chance": 0.3
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "name": "Hans",
+        "combat_level": null,
+        "examine": "Walks around aimlessly.",
+        "attack": 1,
+        "strength": 1,
+        "defence": 1,
+        "hitpoints": 10,
+        "is_aggressive": false,
+        "aggro_range": 0,
+        "loot_table": []
+    },
+    {
+        "id": 7,
+        "name": "Cow",
+        "combat_level": 2,
+        "examine": "A cow. Mooo!",
+        "attack": 1,
+        "strength": 1,
+        "defence": 1,
+        "hitpoints": 8,
+        "is_aggressive": false,
+        "aggro_range": 0,
+        "loot_table": [
+            {
+                "item_id": 526,
+                "min_amount": 1,
+                "max_amount": 1,
+                "chance": 1.0
+            }
+        ]
+    },
+    {
+        "id": 10,
+        "name": "Chicken",
+        "combat_level": 1,
+        "examine": "Cluck cluck!",
+        "attack": 1,
+        "strength": 1,
+        "defence": 1,
+        "hitpoints": 3,
+        "is_aggressive": false,
+        "aggro_range": 0,
+        "loot_table": [
+            {
+                "item_id": 314,
+                "min_amount": 1,
+                "max_amount": 1,
+                "chance": 1.0
+            },
+            {
+                "item_id": 2138,
+                "min_amount": 5,
+                "max_amount": 15,
+                "chance": 0.1
+            }
+        ]
+    },
+    {
+        "id": 81,
+        "name": "Guard",
+        "combat_level": 21,
+        "examine": "He tries to keep the peace.",
+        "attack": 20,
+        "strength": 19,
+        "defence": 19,
+        "hitpoints": 22,
+        "is_aggressive": false,
+        "aggro_range": 0,
+        "loot_table": [
+            {
+                "item_id": 995,
+                "min_amount": 10,
+                "max_amount": 50,
+                "chance": 0.5
+            }
+        ]
+    },
+    {
+        "id": 198,
+        "name": "Goblin",
+        "combat_level": 5,
+        "examine": "An ugly green creature.",
+        "attack": 5,
+        "strength": 5,
+        "defence": 3,
+        "hitpoints": 5,
+        "is_aggressive": true,
+        "aggro_range": 5,
+        "loot_table": [
+            {
+                "item_id": 995,
+                "min_amount": 5,
+                "max_amount": 20,
+                "chance": 0.6
+            },
+            {
+                "item_id": 1277,
+                "min_amount": 1,
+                "max_amount": 1,
+                "chance": 0.05
+            }
+        ]
+    },
+    {
+        "id": 494,
+        "name": "Banker",
+        "combat_level": null,
+        "examine": "They look after your money.",
+        "attack": 1,
+        "strength": 1,
+        "defence": 1,
+        "hitpoints": 10,
+        "is_aggressive": false,
+        "aggro_range": 0,
+        "loot_table": []
+    },
+    {
+        "id": 519,
+        "name": "Shop keeper",
+        "combat_level": null,
+        "examine": "I wonder what they sell?",
+        "attack": 1,
+        "strength": 1,
+        "defence": 1,
+        "hitpoints": 10,
+        "is_aggressive": false,
+        "aggro_range": 0,
+        "loot_table": []
+    },
+    {
+        "id": 3253,
+        "name": "Zezima",
+        "combat_level": 126,
+        "examine": "A legend.",
+        "attack": 99,
+        "strength": 99,
+        "defence": 99,
+        "hitpoints": 99,
+        "is_aggressive": false,
+        "aggro_range": 0,
+        "loot_table": [
+            {
+                "item_id": 995,
+                "min_amount": 1000,
+                "max_amount": 10000,
+                "chance": 1.0
+            }
+        ]
+    },
+    {
+        "id": 3254,
+        "name": "Mod Mark",
+        "combat_level": 126,
+        "examine": "A Jagex moderator.",
+        "attack": 99,
+        "strength": 99,
+        "defence": 99,
+        "hitpoints": 99,
+        "is_aggressive": false,
+        "aggro_range": 0,
+        "loot_table": []
+    }
+]

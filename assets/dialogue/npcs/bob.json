@@ -1,0 +1,66 @@
+{
+  "npc_id": 1,
+  "npc_name": "Bob",
+  "dialogues": [
+    {
+      "id": 0,
+      "trigger": "greeting",
+      "text": "Welcome to my shop! I sell all sorts of useful items for adventurers.",
+      "options": [
+        {
+          "text": "What do you have for sale?",
+          "next_dialogue": 1
+        },
+        {
+          "text": "Do you buy items?",
+          "next_dialogue": 2
+        },
+        {
+          "text": "Maybe later.",
+          "next_dialogue": null
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "trigger": "what_for_sale",
+      "text": "I've got bronze weapons, tools for woodcutting and mining, and some basic supplies. Unfortunately, my stock system isn't quite ready yet, so you'll have to come back later for actual trading!",
+      "options": [
+        {
+          "text": "When will the shop be ready?",
+          "next_dialogue": 3
+        },
+        {
+          "text": "I'll come back later then.",
+          "next_dialogue": null
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "trigger": "buy_items",
+      "text": "Aye, I'll buy certain items from you - especially ones that are in good condition. But you'll need to wait until the trading system is implemented!",
+      "options": [
+        {
+          "text": "What about your stock?",
+          "next_dialogue": 1
+        },
+        {
+          "text": "Alright, thanks anyway.",
+          "next_dialogue": null
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "trigger": "when_ready",
+      "text": "The developers are working on it! Should be ready in a future update. For now, you can find items on the ground or from defeating creatures.",
+      "options": [
+        {
+          "text": "Good to know, thanks!",
+          "next_dialogue": null
+        }
+      ]
+    }
+  ]
+}
